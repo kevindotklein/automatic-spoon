@@ -28,14 +28,15 @@ double target(double x) {
 }
 
 node_t* new_node(node_type_t type) {
-  return &(node_t){
-    .type = type,
-  };
+  node_t* n = malloc(sizeof(node_t));
+  n->type = type;
+  n->left = n->right = NULL;
+  return n;
 }
 
 node_t* random_tree(int depth) {
   if(depth == 0) {
-    if(frand(0.L, 1.L) < 0.05) {
+    if(frand(0., 1.) < 0.1) {
       node_t* n = new_node(VAR);
       return n;
     }else {
@@ -43,15 +44,16 @@ node_t* random_tree(int depth) {
       n->value = (rand() % 5) - 2;
       return n;
     }
-    
-    node_t* n = new_node(OP);
-    char ops[3] = {'+', '-', '*'};
-    n->op = ops[rand() % 3];
-
-    n->left = random_tree(depth - 1);
-    n->right = random_tree(depth - 1);
-    return n;
   }
+    
+  node_t* n = new_node(OP);
+  char ops[3] = {'+', '-', '*'};
+  n->op = ops[rand() % 3];
+
+  n->left = random_tree(depth - 1);
+  n->right = random_tree(depth - 1);
+  return n;
+  
 }
 
 double eval(node_t* n, double x) {
@@ -71,27 +73,27 @@ double eval(node_t* n, double x) {
 }
 
 double mse(node_t* n) {
-  double err = 0.L;
+  double err = 0.;
   for(double x = -2; x <= 2; x+=1) {
     double d = eval(n, x) - target(x);
     err += d*d;
   }
 
-  return err/5.L;
+  return err/5.;
 }
 
 node_t* copy_tree(node_t* n) {
   if(!n) return NULL;
-  return &(node_t){
-    .op = n->op,
-    .value = n->value,
-    .left = copy_tree(n->left),
-    .right = copy_tree(n->right),
-  };
+  node_t* c = new_node(n->type);
+  c->op = n->op;
+  c->value = n->value;
+  c->left = copy_tree(n->left);
+  c->right = copy_tree(n->right);
+  return c;
 }
 
 void mutate(node_t* n) {
-  if(frand(0.L, 1.L) < MU_RATE) {
+  if(frand(0., 1.) < MU_RATE) {
     if(n->type == OP) {
       char ops[3] = {'+', '-', '*'};
       n->op = ops[rand() % 3];
@@ -122,9 +124,9 @@ void print_tree(node_t* n) {
   if (n->type == CONST) { printf("%.2f", n->value); return; }
 
   printf("(");
-  print(n->left);
+  print_tree(n->left);
   printf(" %c ", n->op);
-  print(n->right);
+  print_tree(n->right);
   printf(")");
 }
 
@@ -139,7 +141,7 @@ int main(void) {
     pop[i] = random_tree(MAX_DEPTH);
   }
 
-  for(int gen=0; gen<30; gen++) {
+  for(int gen=0; gen<5000; gen++) {
 
     for(int i=0; i<POP; i++) {
       fit[i] = mse(pop[i]);
@@ -150,10 +152,27 @@ int main(void) {
       if(fit[i] < fit[best]) best = i;
     }
 
-    printf("gen: %d | better fit(MSE): %.4f | expr: ", gen, fit[best]);
+    printf("gen: %d | better fit(MSE): %.4f | expr: ", gen+1, fit[best]);
     print_tree(pop[best]);
     printf("\n");
+
+    node_t* new_pop[POP];
+    for(int i=0; i<POP; i++) {
+      node_t* a = tournament(pop, fit);
+      node_t* b = tournament(pop, fit);
+
+      node_t* ac = copy_tree(a);
+      node_t* bc = copy_tree(b);
+
+      crossover(ac, bc);
+      mutate(ac);
+
+      new_pop[i] = ac;
+    }
+
+    for(int i=0; i<POP; i++) {
+      pop[i] = new_pop[i];
+    }
   }
-  
-	return 0;
+  return 0;
 }
