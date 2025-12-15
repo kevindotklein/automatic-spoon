@@ -155,6 +155,7 @@ int main(void) {
     printf("gen: %d | better fit(MSE): %.4f | expr: ", gen+1, fit[best]);
     print_tree(pop[best]);
     printf("\n");
+    if(fit[best] == 0.) return 0;
 
     node_t* new_pop[POP];
     for(int i=0; i<POP; i++) {
