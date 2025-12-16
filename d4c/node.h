@@ -5,7 +5,7 @@
 #include <math.h>
 #include "shared.h"
 
-typedef enum { OP, VAR, CONST } node_type_t;
+typedef enum { OP, VAR, CONST, NEG_VAR } node_type_t;
 
 typedef struct node_t {
   node_type_t type;

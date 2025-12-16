@@ -12,7 +12,10 @@ node_t* random_tree(int depth) {
     if(frand(0., 1.) < 0.1) {
       node_t* n = new_node(VAR);
       return n;
-    }else {
+    } else if (frand(0., 1.) < 0.1) {
+      node_t* n = new_node(NEG_VAR);
+      return n;
+    } else {
       node_t* n = new_node(CONST);
       n->value = (rand() % 5) - 2;
       return n;
@@ -30,6 +33,7 @@ node_t* random_tree(int depth) {
 
 double eval(node_t* n, double x) {
   if(n->type == VAR) return x;
+  if(n->type == NEG_VAR) return -x;
   if(n->type == CONST) return n->value;
 
   double a = eval(n->left, x);
@@ -79,6 +83,7 @@ void crossover(node_t* a, node_t* b) {
 
 void print_tree(node_t* n) {
   if (n->type == VAR) { printf("x"); return; }
+  if (n->type == NEG_VAR) { printf("-x"); return; }
   if (n->type == CONST) { printf("%.2f", n->value); return; }
 
   printf("(");

@@ -59,7 +59,7 @@ expr_t* sum_expr(expr_t* a, expr_t* b) {
 }
 
 expr_t* mul_expr(expr_t* a, expr_t* b) {
-
+  //todo
 }
 
 expr_t* eval_expr(node_t* n) {
@@ -73,11 +73,24 @@ expr_t* eval_expr(node_t* n) {
     return e;
   }
 
+  if(n->type == NEG_VAR) {
+    expr_t* e = new_expr(1, -1);
+    return e;
+  }
+
   expr_t* a = eval_expr(n->left);
   expr_t* b = eval_expr(n->right);
 
   switch(n->op) {
     case '+': return sum_expr(a, b);
+    case '-': {
+      expr_t* head = b;
+      while(b) {
+        b->value = -b->value;
+        b = b->next;
+      }
+      return sum_expr(a, head);
+    }
   }
 }
 
@@ -85,12 +98,16 @@ node_t* expr_to_node(expr_t* e) {
   node_t* n = NULL;
 
   if(e->degree == 0) {
-    n = new_node(CONST);
-    n->value = e->value;
+    if(e->value != 0.) {
+      n = new_node(CONST);
+      n->value = e->value;
+    }
   }
 
   if(e->degree == 1) {
-    if(e->value != 1) {
+    if(e->value == 0) {
+      n = NULL;
+    } else if(e->value != 1.) {
       n = new_node(OP);
       n->op = '*';
       n->right = new_node(VAR);
@@ -102,7 +119,9 @@ node_t* expr_to_node(expr_t* e) {
   }
 
   if(e->degree > 1) {
-    if(e->value != 1) {
+    if(e->value == 0) {
+      n = NULL;
+    } else if(e->value != 1.) {
       n = new_node(OP);
       n->op = '*';
       n->left = new_node(CONST);
@@ -122,62 +141,23 @@ node_t* expr_to_node(expr_t* e) {
   }
 
   if(e->next) {
-    //add + plug what i did right hand side and lhs is the recursive call
-    node_t *n2 = new_node(OP);
-    n2->op = '+';
-    n2->right = n;
-    n2->left = expr_to_node(e->next);
+    node_t* n2 = NULL;
+    if(n) {
+      n2 = new_node(OP);
+      n2->op = '+';
+      n2->right = n;
+      n2->left = expr_to_node(e->next);
+    } else {
+      n2 = expr_to_node(e->next);
+    }
     return n2;
+    
   }
-  return n;
-
-//  if(e->degree == 0 && !e->next) {
-//    node_t* n = new_node(CONST);
-//    n->value = e->value;
-//    return n;
-//  }
-//
-//  if(e->next) {
-//    node_t* n = new_node(OP);
-//    n->op = '+';
-//
-//    if(e->degree == 0) {
-//      n->right = new_node(CONST);
-//      n->right->value = e->value;
-//      goto tail;
-//    }
-//
-//    n->right = new_node(OP);
-//    n->right->op = '*';
-//
-//    n->right->right = new_node(CONST);
-//    n->right->right->value = e->value;
-//
-//    n->right->left = new_node(OP);
-//    n->right->left->op = '^';
-//
-//    n->right->left->left = new_node(VAR);
-//    n->right->left->right = new_node(CONST);
-//    n->right->left->right->value = e->degree;
-//
-//tail:
-//    n->left = expr_to_node(e->next);
-//    return n;
-//  }
-//
-//  node_t* n = new_node(OP);
-//  n->op = '*';
-//
-//  n->right = new_node(CONST);
-//  n->right->value = e->value;
-//
-//  n->left = new_node(OP);
-//  n->left->op = '^';
-//
-//  n->left->left = new_node(VAR);
-//  n->left->right = new_node(CONST);
-//  n->left->right->value = e->degree;
-//  return n;
+  if(n) return n;
+  
+  node_t* n0 = new_node(CONST);
+  n0->value = 0;
+  return n0;
 }
 
 void print_expr(expr_t* e) {

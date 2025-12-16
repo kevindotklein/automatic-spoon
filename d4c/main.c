@@ -88,8 +88,7 @@ int main(void) {
   n->right->op = '+';
 
   n->right->left = new_node(VAR);
-  n->right->right = new_node(CONST);
-  n->right->right->value = 3.;
+  n->right->right = new_node(NEG_VAR);
 
   print_tree(n);
   printf("\n");
