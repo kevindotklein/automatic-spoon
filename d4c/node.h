@@ -2,6 +2,7 @@
 #define NODE_H
 
 #include <stdio.h>
+#include <math.h>
 #include "shared.h"
 
 typedef enum { OP, VAR, CONST } node_type_t;

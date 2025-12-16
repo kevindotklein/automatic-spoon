@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-#define CROSS_RATE 1.f
+#define CROSS_RATE 0.95f
 #define MU_RATE 0.05f
 
 static inline double frand(double min, double max) {

@@ -20,8 +20,8 @@ node_t* random_tree(int depth) {
   }
     
   node_t* n = new_node(OP);
-  char ops[3] = {'+', '-', '*'};
-  n->op = ops[rand() % 3];
+  char ops[4] = {'+', '-', '*', '^'};
+  n->op = ops[rand() % 4];
 
   n->left = random_tree(depth - 1);
   n->right = random_tree(depth - 1);
@@ -39,6 +39,7 @@ double eval(node_t* n, double x) {
     case '+': return a + b;
     case '-': return a - b;
     case '*': return a * b;
+    case '^': return pow(a, b);
   }
 
   return 0;
@@ -57,8 +58,8 @@ node_t* copy_tree(node_t* n) {
 void mutate(node_t* n) {
   if(frand(0., 1.) < MU_RATE) {
     if(n->type == OP) {
-      char ops[3] = {'+', '-', '*'};
-      n->op = ops[rand() % 3];
+      char ops[4] = {'+', '-', '*', '^'};
+      n->op = ops[rand() % 4];
     } else if(n->type == CONST) {
       // -2 .. 2
       n->value = (rand() % 5) - 2;
