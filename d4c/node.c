@@ -1,31 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
-
-#define POP 50
-#define MAX_DEPTH 4
-#define CROSS_RATE 0.9f
-#define MU_RATE 0.05f
-
-typedef enum { OP, VAR, CONST } node_type_t;
-
-typedef struct node_t {
-  node_type_t type;
-  char op;
-  double value;
-  struct node_t* left;
-  struct node_t* right;
-} node_t;
-
-double frand(double min, double max) {
-  return min + (max - min) * ((double)rand() / RAND_MAX);
-}
-
-// f(x) = x^2 - x + 1
-double target(double x) {
-  return x*x - x + 1;
-}
+#include "node.h"
 
 node_t* new_node(node_type_t type) {
   node_t* n = malloc(sizeof(node_t));
@@ -53,7 +26,6 @@ node_t* random_tree(int depth) {
   n->left = random_tree(depth - 1);
   n->right = random_tree(depth - 1);
   return n;
-  
 }
 
 double eval(node_t* n, double x) {
@@ -70,16 +42,6 @@ double eval(node_t* n, double x) {
   }
 
   return 0;
-}
-
-double mse(node_t* n) {
-  double err = 0.;
-  for(double x = -2; x <= 2; x+=1) {
-    double d = eval(n, x) - target(x);
-    err += d*d;
-  }
-
-  return err/5.;
 }
 
 node_t* copy_tree(node_t* n) {
@@ -107,13 +69,8 @@ void mutate(node_t* n) {
   if(n->right) mutate(n->right);
 }
 
-node_t* tournament(node_t** pop, double* fit) {
-  int a = rand() % POP;
-  int b = rand() % POP;
-  return fit[a] < fit[b] ? pop[a] : pop[b];
-}
-
 void crossover(node_t* a, node_t* b) {
+  if(frand(0., 1.) > CROSS_RATE) return;
   node_t* temp = a->left;
   a->left = b->left;
   b->left = temp;
@@ -128,52 +85,4 @@ void print_tree(node_t* n) {
   printf(" %c ", n->op);
   print_tree(n->right);
   printf(")");
-}
-
-int main(void) {
-  //srand(time(NULL));
-  srand(1);
-
-  node_t* pop[POP];
-  double fit[POP];
-
-  for(int i=0; i<POP; i++) {
-    pop[i] = random_tree(MAX_DEPTH);
-  }
-
-  for(int gen=0; gen<5000; gen++) {
-
-    for(int i=0; i<POP; i++) {
-      fit[i] = mse(pop[i]);
-    }
-
-    int best = 0;
-    for(int i=0; i<POP; i++) {
-      if(fit[i] < fit[best]) best = i;
-    }
-
-    printf("gen: %d | better fit(MSE): %.4f | expr: ", gen+1, fit[best]);
-    print_tree(pop[best]);
-    printf("\n");
-    if(fit[best] == 0.) return 0;
-
-    node_t* new_pop[POP];
-    for(int i=0; i<POP; i++) {
-      node_t* a = tournament(pop, fit);
-      node_t* b = tournament(pop, fit);
-
-      node_t* ac = copy_tree(a);
-      node_t* bc = copy_tree(b);
-
-      crossover(ac, bc);
-      mutate(ac);
-
-      new_pop[i] = ac;
-    }
-
-    for(int i=0; i<POP; i++) {
-      pop[i] = new_pop[i];
-    }
-  }
-  return 0;
 }
