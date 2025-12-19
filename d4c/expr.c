@@ -59,7 +59,26 @@ expr_t* sum_expr(expr_t* a, expr_t* b) {
 }
 
 expr_t* mul_expr(expr_t* a, expr_t* b) {
-  //todo
+  expr_t* head = NULL;
+  expr_t* tail = NULL;
+  expr_t* bc = b;
+
+  while(a) {
+    while(bc) {
+      if(!head) {
+        head = tail = new_expr(a->degree + bc->degree, a->value * bc->value);
+      } else {
+        tail->next = new_expr(a->degree + bc->degree, a->value * bc->value);
+        tail = tail->next;
+      }
+      bc = bc->next;
+    }
+
+    bc = b;
+    a = a->next;
+  }
+
+  return head;
 }
 
 expr_t* eval_expr(node_t* n) {
@@ -91,6 +110,8 @@ expr_t* eval_expr(node_t* n) {
       }
       return sum_expr(a, head);
     }
+    case '*': return mul_expr(a, b);
+    default: return NULL; break;
   }
 }
 
@@ -134,9 +155,9 @@ node_t* expr_to_node(expr_t* e) {
     } else {
       n = new_node(OP);
       n->op = '^';
-      n->right = new_node(VAR);
-      n->left = new_node(CONST);
-      n->left->value = e->degree;
+      n->left = new_node(VAR);
+      n->right = new_node(CONST);
+      n->right->value = e->degree;
     }
   }
 
@@ -161,6 +182,6 @@ node_t* expr_to_node(expr_t* e) {
 }
 
 void print_expr(expr_t* e) {
-  printf("[%d %.2f]\n", e->degree, e->value);
+  printf("[%d %.2f] ", e->degree, e->value);
   if(e->next) print_expr(e->next);
 }

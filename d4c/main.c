@@ -75,26 +75,40 @@ int main(void) {
 //  }
 
   node_t* n = new_node(OP);
-  n->op = '+';
+  n->op = '*';
+
+//  n->left = new_node(OP);
+//  n->left->op = '+';
+//
+//  n->left->left = new_node(VAR);
+//  n->left->right = new_node(CONST);
+//  n->left->right->value = 2.;
+//
+//  n->right = new_node(OP);
+//  n->right->op = '+';
+//
+//  n->right->left = new_node(CONST);
+//  n->right->left->value = 1.;
+//  n->right->right = new_node(VAR);
 
   n->left = new_node(OP);
   n->left->op = '+';
-
   n->left->left = new_node(VAR);
   n->left->right = new_node(CONST);
-  n->left->right->value = 3.;
+  n->left->right->value = 2.;
 
   n->right = new_node(OP);
   n->right->op = '+';
-
   n->right->left = new_node(VAR);
-  n->right->right = new_node(NEG_VAR);
+  n->right->right = new_node(CONST);
+  n->right->right->value = 1.;
 
   print_tree(n);
   printf("\n");
 
   expr_t* e = eval_expr(n);
   print_expr(e);
+  printf("\n");
 
   node_t* res = expr_to_node(e);
   print_tree(res);

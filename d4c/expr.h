@@ -4,7 +4,10 @@
 #include "node.h"
 
 typedef struct expr_t {
-  int degree;
+  union {
+    int degree;
+    struct expr_t* e_degree;
+  };
   double value;
   struct expr_t* next;
 } expr_t;
