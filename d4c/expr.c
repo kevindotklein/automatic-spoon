@@ -58,6 +58,34 @@ expr_t* sum_expr(expr_t* a, expr_t* b) {
     return head;
 }
 
+expr_t* reduce_expr(expr_t* a) {
+    if (!a) return NULL;
+
+    expr_t* curr = a;
+
+    while (curr) {
+        expr_t* prev = curr;
+        expr_t* it = curr->next;
+
+        while (it) {
+            if (it->degree == curr->degree) {
+                curr->value += it->value;
+
+                prev->next = it->next;
+                free(it);
+                it = prev->next;
+            } else {
+                prev = it;
+                it = it->next;
+            }
+        }
+
+        curr = curr->next;
+    }
+
+    return a;
+}
+
 expr_t* mul_expr(expr_t* a, expr_t* b) {
   expr_t* head = NULL;
   expr_t* tail = NULL;
@@ -78,7 +106,7 @@ expr_t* mul_expr(expr_t* a, expr_t* b) {
     a = a->next;
   }
 
-  return head;
+  return reduce_expr(head);
 }
 
 expr_t* eval_expr(node_t* n) {
